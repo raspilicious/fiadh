@@ -15,7 +15,7 @@ from discord.ext import tasks, commands
 
 # Read token from .env file
 env_vars = []
-with open('/home/pi/Fiadh/.env') as f:
+with open('/home/pi/fiadh/.env') as f:
     for line in f:
         if line.startswith('#'):
             continue
@@ -105,13 +105,13 @@ def roll_strength(die_type):
     highest = 0
     if x > y:
         highest = x
-        results += "(**{}**, {}). Take the higher number, **{}**.".format(x, y, highest)
+        results += " (**{}**, {}). Take the higher number, **{}**.".format(x, y, highest)
     elif y > x:
         highest = y
-        results += "({}, **{}**). Take the higher number, **{}**.".format(x, y, highest)
+        results += " ({}, **{}**). Take the higher number, **{}**.".format(x, y, highest)
     else:
         highest = x
-        results += "({}, {}). Take **{}**.".format(x, y, x)
+        results += " ({}, {}). Take **{}**.".format(x, y, x)
     if highest <= 2:
         results += "{}".format(lose_composure(die_type))
     return results
@@ -123,17 +123,17 @@ def roll_weakness(die_type):
     results = ""
     x = randint(1, int(die_type))
     y = randint(1, int(die_type))
-    lowest = 9999999999
+    lowest = 99
     if x < y:
         lowest = x
-        results += "(**{}**, {}). Take the lower number, **{}**.".format(x, y, lowest)
+        results += "( **{}**, {}). Take the lower number, **{}**.".format(x, y, lowest)
     elif y < x:
         lowest = y
-        results += "({}, **{}**). Take the lower number, **{}**.".format(x, y, lowest)
+        results += " ({}, **{}**). Take the lower number, **{}**.".format(x, y, lowest)
     else:
         lowest = x
-        results += "({}, {}). Take **{}**.".format(x, y, x)
-    if highest <= 2:
+        results += " ({}, {}). Take **{}**.".format(x, y, x)
+    if lowest <= 2:
         results += "{}".format(lose_composure(die_type))
     return results
 
