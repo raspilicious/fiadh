@@ -1,2 +1,2 @@
 # fiadh
-A Discord bot that helps people to play The Forests of Faera roleplaying game over PBP.
+A dice-rolling bot for use with The Forests of Faera roleplaying game.
