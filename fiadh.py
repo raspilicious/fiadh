@@ -260,6 +260,12 @@ def r(ctx, r : str):
     except ValueError as err:
         # Display error message to channel
         yield from ctx.send(err)
+    yield from purge_user_message(ctx)
+
+@bot.command()
+@asyncio.coroutine
+async def purge_user_message(ctx):
+    await ctx.message.delete()
 
 # Bot command to delete all messages the bot has made.
 @bot.command(pass_context=True, description='Deletes all messages the bot has made.')
