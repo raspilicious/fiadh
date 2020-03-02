@@ -3,9 +3,23 @@ A dice-rolling bot for use with The Forests of Faera roleplaying game.
 
 ```
 Fiadh commands:
-.r 1d#    for a   generic roll
-.r 1d#c   for a   *composure* roll
-.r 1d#e   for an  *enchantment* roll
-.r 2d#s   for a   *strength* roll
-.r 2d#w   for a   *weakness* roll
+.r dX    for a simple roll
+.r dXc   for a composure roll
+.r dXe   for an enchantment roll
+.r dXs   for a strength roll
+.r dXw   for a weakness roll
+
+Roll types:
+[c] Composure
+    - Roll one die
+    - Downgrade on 1-2
+[e] Enchantment
+    - Roll one die
+    - Upgrade on highest two numbers
+[s] Strength
+    - Roll two dice
+    - Take the higher number
+[w] Weakness
+    - Roll two dice
+    - Take the lower number
 ```
