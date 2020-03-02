@@ -1,5 +1,7 @@
 # fiadh.py
-# A dice-rolling bot for Discord servers to be used with The Forests of Faera PBP.
+# https://github.com/raspilicious/fiadh
+#
+# A dice-rolling bot for use with The Forests of Faera roleplaying game.
 # @category  Tools
 # @version   1.0
 # @author    Aaron Goss
@@ -19,27 +21,20 @@ with open('/home/pi/fiadh/.env') as f:
     for line in f:
         if line.startswith('#'):
             continue
-        # if 'export' not in line:
-        #   continue
-        # Remove leading 'export', if you have those
-        # then, split name / value pair
-        # key, value = line.replace('export ', '', 1).strip().split('=', 1)
         key, value = line.strip().split('=', 1)
         token = value
-        # os.environ[key] = value  # Load to local environ
-        env_vars.append({'name': key, 'value': value}) # Save to a list
+        env_vars.append({'name': key, 'value': value}) # Save to a list... probably not needed
 
 bot = discord.Client()
 bot = commands.Bot(command_prefix='.', description="A dice-rolling bot for use with The Forests of Faera roleplaying game.")
+bot.remove_command('help')
 
 @bot.event
 @asyncio.coroutine
 async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game('The Forests of Faera'))
-    print('{bot.user} has connected to Discord!')
-    print('Logged in as')
-    print(bot.user.name)
-    print(bot.user.id)
+    print('{} has connected to Discord!'.format(bot.user))
+    print('Logged in as {} with ID of [{}]'.format(bot.user.name, bot.user.id))
     print('--------')
 
 # Determines if a message is owned by the bot
@@ -57,18 +52,17 @@ def is_num(s):
         return False
 
 # Rolls a single die and returns the result.
-# Parameters: die_type [d4, d6, d8, d10, d12]
+# Parameters: die_type
 # Returns: string with results
 def roll_single(die_type):
     results = ""
-    #print("rolling a single die. results: {}".format(results))
     x = randint(1, int(die_type))
-    #print("x: {}".format(x))
     results += "{}".format(x)
+    print("Rolled a d{} die and got {}.".format(die_type, results))
     return results
 
 # Rolls a single die and returns the result.
-# Parameters: die_type [d4, d6, d8, d10, d12]
+# Parameters: die_type [ideally d4, d6, d8, d10, or d12]
 # Returns: string with results
 def roll_composure(die_type):
     results = ""
@@ -79,24 +73,26 @@ def roll_composure(die_type):
             results += "\n*You lose the last of your composure and become **distressed!***"
         else:
             results += "\n*You lose some composure. Downgrade your composure die.*"
+    print("Rolled a d{} composure die and got {}.".format(die_type, results))
     return results
 
 # Rolls a single die and returns the result.
-# Parameters: die_type [d4, d6, d8, d10, d12]
+# Parameters: die_type [ideally d4, d6, d8, d10, or d12]
 # Returns: string with results
 def roll_enchantment(die_type):
     results = ""
-    x = randint(1, int(die_type))
+    x = randint(1, die_type)
     results += " ({})".format(x)
     if x >= die_type - 1:
         if die_type == 10:
             results += "\n*You become overwhelmed by the enchantment of the forests and become **distressed!***"
         else:
             results += "\n*You gain some enchantment. Upgrade your enchantment die and acquire a new rune.*"
+    print("Rolled a d{} enchantment die and got {}.".format(die_type, results))
     return results
 
 # Rolls two dice and returns the HIGHEST.
-# Parameters: die_type [d4, d6, d8, d10, d12]
+# Parameters: die_type [ideally d4, d6, d8, d10, or d12]
 # Returns: string with results
 def roll_strength(die_type):
     results = ""
@@ -114,10 +110,11 @@ def roll_strength(die_type):
         results += " ({}, {}). Take **{}**.".format(x, y, x)
     if highest <= 2:
         results += "{}".format(lose_composure(die_type))
+    print("Rolled a d{} die with strength and got {} and {}.".format(die_type, x, y))
     return results
 
 # Rolls two dice and returns the LOWEST.
-# Parameters: die_type [d4, d6, d8, d10, d12]
+# Parameters: die_type [ideally d4, d6, d8, d10, or d12]
 # Returns: string with results
 def roll_weakness(die_type):
     results = ""
@@ -126,7 +123,7 @@ def roll_weakness(die_type):
     lowest = 99
     if x < y:
         lowest = x
-        results += "( **{}**, {}). Take the lower number, **{}**.".format(x, y, lowest)
+        results += " (**{}**, {}). Take the lower number, **{}**.".format(x, y, lowest)
     elif y < x:
         lowest = y
         results += " ({}, **{}**). Take the lower number, **{}**.".format(x, y, lowest)
@@ -135,30 +132,29 @@ def roll_weakness(die_type):
         results += " ({}, {}). Take **{}**.".format(x, y, x)
     if lowest <= 2:
         results += "{}".format(lose_composure(die_type))
+    print("Rolled a d{} die with weakness and got {} and {}.".format(die_type, x, y))
     return results
 
-# Rolls two dice and returns the LOWEST.
-# Parameters: die_type [d4, d6, d8, d10, d12]
-# Returns: string with results
+# Append a message that the author has lost composure
+# Parameters: die_type [ideally d4, d6, d8, d10, or d12]
+# Returns: string with a message that the author has lost composure
 def lose_composure(die_type):
     response = ""
     if die_type == 4:
         response += "\n*You lose the last of your composure and become **distressed!***"
     else:
         response += "\n*You lose some composure. Downgrade your composure die.*"
+    print("Losing some composure.")
     return response
 
 # Parse .r verbage
 @bot.command(pass_context=True,description='Rolls dice.\nExamples:\n100  Rolls 1-100.\n50-100  Rolls 50-100.\n3d6  Rolls 3 d6 dice and returns total.\nModifiers:\n! Hit success. 3d6!5 Counts number of rolls that are greater than 5.\nmod: Modifier. 3d6mod3 or 3d6mod-3. Adds 3 to the result.\n> Threshold. 100>30 returns success if roll is greater than or equal to 30.\n\nFormatting:\nMust be done in order.\nSingle die roll: 1-100mod2>30\nMultiple: 5d6!4mod-2>2')
 @asyncio.coroutine
 def r(ctx, r : str):
-    a, b, hit, num_of_dice, threshold, composure, enchantment, strength, weakness, die_type = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    # author: Writer of Discord message
+    composure, enchantment, strength, weakness, die_type = 0, 0, 0, 0, 0
+    # author: Writer of the Discord message
     author = ctx.message.author
-    if (r.find('>') != -1):
-        r, threshold = r.split('>')
-    if (r.find('!') != -1):
-        r, hit = r.split('!')
+    # Look for key letters
     if (r.find('c') != -1):
         r, composure = r.split('c')
     if (r.find('e') != -1):
@@ -168,99 +164,41 @@ def r(ctx, r : str):
     if (r.find('w') != -1):
         r, weakness = r.split('w')
     if (r.find('d') != -1):
-        num_of_dice, die_type = r.split('d')
-    elif (r.find('-') != -1):
-        a, b = r.split('-')
-    else:
-        a = 1
-        b = r
-    #Validate data
+        r, die_type = r.split('d')
+    # Validate data
     try:
-        if (hit != 0):
-            if (is_num(hit) is False):
-                raise ValueError("Hit value format error. Proper usage XdY!Z (eg: 3d6!5).")
-                return
-            else:
-                print("[hit: {}]".format(hit))
-                hit = int(hit)
-        if (num_of_dice != 0):
-            if (is_num(num_of_dice) is False):
-                raise ValueError("Number of dice format error [num_of_dice: {}]. Proper usage XdY (eg: 3d6).".format(num_of_dice))
-                return
-            elif (int(num_of_dice) <= 0):
-                raise ValueError("Number of dice format error [num_of_dice: {}]. Please use a number greater than zero.".format(num_of_dice))
-                return
-            else:
-                print("[num_of_dice: {}]".format(num_of_dice))
-                num_of_dice = int(num_of_dice)
-        if (num_of_dice > 2):
-            raise ValueError("Too many dice [num_of_dice: {}]. Please limit to two or less.".format(num_of_dice))
-            return
+        # Roll a die of a certain size (ieally a d4, d6, d8, d10, or d12)
         if (die_type != 0):
+            die_type_int = 0
             if (is_num(die_type) is False):
-                raise ValueError("Dice type format error [die_type: {}]. Proper usage XdY (eg: 3d6).".format(die_type))
+                raise ValueError("<@{}> :evergreen_tree:\nHey, wrong input! Please type your roll like this: `.r dXY` where X is the die size and Y is the type of roll (**c**omposure, **e**nchantment, **s**trength, or **w**eakness).\nEg: `.r d10c`, `.r d4e`, `.r d8s`, `.r d6w`, and so on.".format(author.id))
                 return
             else:
-                print("[die_type: {}]".format(die_type))
-                die_type = int(die_type)
-        if (a != 0):
-            if (is_num(a) is False):
-                raise ValueError("Error: Minimum must be a number. Proper usage 1-50.")
-                print("[a: {}]".format(a))
-                return
-            else:
-                print("[a: {}]".format(a))
-                a = int(a)
-        if (b != 0):
-            if (is_num(b) is False):
-                raise ValueError("Error: Maximum must be a number. Proper usage 1-50 or 50.")
-                print("[b: {}]".format(b))
-                return
-            else:
-                print("[b: {}]".format(b))
-                b = int(b)
-        if (threshold != 0):
-            if (is_num(threshold) is False):
-                raise ValueError("Error: Threshold must be a number. Proper usage 1-100>30.")
-                return
-            else:
-                print("[threshold: {}]".format(threshold))
-                threshold = int(threshold)
-        if (die_type != 0 and hit != 0):
-            if (hit > die_type):
-                raise ValueError("Error: Hit value cannot be greater than dice type.")
-                return
-            elif (die_type <= 0):
-                raise ValueError("Dice type must be a positive number.")
-                return
-            elif (num_of_dice <= 0):
-                raise ValueError("Number of dice must be a positive number.")
-                return
-        #if a == 0:
-            #yield from ctx.send("{} rolls d{}. Result: {}".format(author, die_type, roll_single(die_type)))
-        #elif b == 0:
-            #yield from ctx.send("{} rolls d{}. Result: {}".format(author, die_type, roll_single(die_type)))
-        #if (a == 0 and b == 0):
-            #yield from ctx.send("{} rolls 1d{}. Result: {}".format(author, a, roll_single))
-        #else:
-            #ctx.send("Error. [author: {}], [a: {}], [b: {}], [roll_single: {}]".format(author,a,b,roll_single))
-        print("[a={}], [b={}], [hit={}], [num_of_dice={}], [threshold={}], [die_type={}]".format(a,b,hit,num_of_dice,threshold,die_type))
-        if a != 0 and b != 0:
-            yield from ctx.send("{} rolls {}-{}. Result: {}".format(author, a, b, roll_single(a, b)))
-        elif strength != 0:
-            yield from ctx.send("<@{}> :game_die:\n**Strength roll:** d{}{}".format(author.id, die_type, roll_strength(die_type)))
+                die_type_int = int(die_type)
+            if (die_type_int <= 0):
+                die_type_int *= -1
+        #
+        # Get Fiadh to respond in the channel
+        if strength != 0:
+            yield from ctx.send("<@{}> :game_die:\n:heartpulse: **Strength roll:** d{}{}".format(author.id, die_type_int, roll_strength(die_type_int)))
         elif weakness != 0:
-            yield from ctx.send("<@{}> :game_die:\n**Weakness roll:** d{}{}".format(author.id, die_type, roll_weakness(die_type)))
+            yield from ctx.send("<@{}> :game_die:\n:broken_heart: **Weakness roll:** d{}{}".format(author.id, die_type_int, roll_weakness(die_type_int)))
         elif composure != 0:
-            yield from ctx.send("<@{}> :game_die:\n**Composure roll:** d{}{}".format(author.id, die_type, roll_composure(die_type)))
+            yield from ctx.send("<@{}> :game_die:\n:punch: **Composure roll:** d{}{}".format(author.id, die_type_int, roll_composure(die_type_int)))
         elif enchantment != 0:
-            yield from ctx.send("<@{}> :game_die:\n**Enchantment roll:** d{}{}".format(author.id, die_type, roll_enchantment(die_type)))
+            yield from ctx.send("<@{}> :game_die:\n:sparkles:  **Enchantment roll:** d{}{}".format(author.id, die_type_int, roll_enchantment(die_type_int)))
         else:
-            yield from ctx.send("<@{}> :game_die:\n**Result:** {}d{} ({})".format(author.id, num_of_dice, die_type, roll_single(die_type)))
+            yield from ctx.send("<@{}> :game_die:\n**Single die roll:** d{} ({})".format(author.id, die_type_int, roll_single(die_type_int)))
     except ValueError as err:
         # Display error message to channel
         yield from ctx.send(err)
     yield from purge_user_message(ctx)
+
+@bot.command(pass_context=True,description='Help')
+@asyncio.coroutine
+def help(ctx):
+    print("Asking for help.")
+    yield from ctx.send("```Fiadh commands:\n.r dX    for a simple roll\n.r dXc   for a composure roll\n.r dXe   for an enchantment roll\n.r dXs   for a strength roll\n.r dXw   for a weakness roll\n\nRoll types:\n[c] Composure\n    - Roll one die\n    - Downgrade on 1-2\n[e] Enchantment\n    - Roll one die\n    - Upgrade on highest two numbers\n[s] Strength\n    - Roll two dice\n    - Take the higher number\n[w] Weakness\n    - Roll two dice\n    - Take the lower number```")
 
 @bot.command()
 @asyncio.coroutine
@@ -275,6 +213,4 @@ def purge(ctx):
     deleted = yield from bot.purge_from(channel, limit=100, check=is_me)
     yield from bot.send_message(channel, 'Deleted {} message(s)'.format(len(deleted)))
 
-# Follow this helpful guide on creating a bot and adding it to your server.
-# https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
 bot.run(token)
