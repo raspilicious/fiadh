@@ -1,6 +1,7 @@
 # fiadh
 A dice-rolling bot for use with The Forests of Faera roleplaying game.
 
+Type `.help` for a list of Fiadh's commands.
 ```
 Fiadh commands:
 .r dX    for a simple roll
