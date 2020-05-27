@@ -188,7 +188,7 @@ def r(ctx, r : str):
         elif enchantment != 0:
             yield from ctx.send("<@{}> :game_die:\n:sparkles:  **Enchantment roll:** d{}{}".format(author.id, die_type_int, roll_enchantment(die_type_int)))
         else:
-            yield from ctx.send("<@{}> :game_die:\n**Single die roll:** d{} ({})".format(author.id, die_type_int, roll_single(die_type_int)))
+            yield from ctx.send("<@{}> :game_die:\n**Single die roll:** d{} (**{}**)".format(author.id, die_type_int, roll_single(die_type_int)))
     except ValueError as err:
         # Display error message to channel
         yield from ctx.send(err)
