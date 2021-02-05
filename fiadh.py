@@ -1,4 +1,4 @@
-# Fiadh v0.5 by Raspilicious
+# Fiadh v0.7 by Raspilicious
 # A dice-rolling bot for Discord servers to be used with The Forests of Faera PBP.
 #
 # Change Log
