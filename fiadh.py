@@ -1,10 +1,27 @@
-# fiadh.py
-# https://github.com/raspilicious/fiadh
+# Fiadh v0.5 by Raspilicious
+# A dice-rolling bot for Discord servers to be used with The Forests of Faera PBP.
 #
-# A dice-rolling bot for use with The Forests of Faera roleplaying game.
-# @category  Tools
-# @version   1.0
-# @author    Aaron Goss
+# Change Log
+# v0.4 202002021941
+# - Improved clarity of the .help function
+# v0.5 202002041001
+# - Added version number variable
+# - Improved clarity on .help function
+# - Tidied up change log
+# v0.6
+# - Fiadh now reads the token from a file
+# v0.7 202002041630
+# - Converted to python
+#
+# Scuba Sara v0.3 by Raspilicious
+# A microgame to be played in Discord.
+#
+# Change Log
+# v0.3 202002041001
+# - Added change log
+# - Added version number variable
+# v0.4 202002041630
+# - Converted to python
 
 # Dice imports
 from random import randint
@@ -16,14 +33,18 @@ import asyncio
 from discord.ext import tasks, commands
 
 # Read token from .env file
-env_vars = []
-with open('/home/pi/fiadh/.env') as f:
-    for line in f:
-        if line.startswith('#'):
-            continue
-        key, value = line.strip().split('=', 1)
-        token = value
-        env_vars.append({'name': key, 'value': value}) # Save to a list... probably not needed
+#env_vars = []
+# with open('/home/pi/fiadh/.env') as f:
+#with open('.env') as f:
+#    for line in f:
+#        if line.startswith('#'):
+#            continue
+#        key, value = line.strip().split('=', 1)
+#        token = value
+#        env_vars.append({'name': key, 'value': value}) # Save to a list... probably not needed
+
+f = open("token.txt", "r")
+token = f.read()
 
 bot = discord.Client()
 bot = commands.Bot(command_prefix='.', description="A dice-rolling bot for use with The Forests of Faera roleplaying game.")
@@ -32,7 +53,7 @@ bot.remove_command('help')
 @bot.event
 @asyncio.coroutine
 async def on_ready():
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game('The Forests of Faera'))
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game('The Forests of Faera | .help'))
     print('{} has connected to Discord!'.format(bot.user))
     print('Logged in as {} with ID of [{}]'.format(bot.user.name, bot.user.id))
     print('--------')
@@ -58,7 +79,8 @@ def roll_single(die_type):
     results = ""
     x = randint(1, int(die_type))
     results += "{}".format(x)
-    print("Rolled a d{} die and got {}.".format(die_type, results))
+    # Print to the console.
+    print("<@{}> rolled a d{} die and got {}.".format(author.id, die_type, results))
     return results
 
 # Rolls a single die and returns the result.
@@ -73,7 +95,8 @@ def roll_composure(die_type):
             results += "\n*You lose the last of your composure and become **distressed!***"
         else:
             results += "\n*You lose some composure. Downgrade your composure die.*"
-    print("Rolled a d{} composure die and got {}.".format(die_type, results))
+    # Print to the console.
+    print("<@{}> rolled a d{} composure die and got {}.".format(author.id, die_type, results))
     return results
 
 # Rolls a single die and returns the result.
@@ -87,8 +110,9 @@ def roll_enchantment(die_type):
         if die_type == 10:
             results += "\n*You become overwhelmed by the enchantment of the forests and become **distressed!***"
         else:
-            results += "\n*You gain some enchantment. Upgrade your enchantment die and acquire a new rune.*"
-    print("Rolled a d{} enchantment die and got {}.".format(die_type, results))
+            results += "\n*You gain some enchantment as you are marked with a new rune. Upgrade your enchantment die and choose the rune.*"
+    # Print to the console.
+    print("<@{}> rolled a d{} enchantment die and got {}.".format(author.id, die_type, results))
     return results
 
 # Rolls two dice and returns the HIGHEST.
@@ -110,7 +134,8 @@ def roll_strength(die_type):
         results += " ({}, {}). Take **{}**.".format(x, y, x)
     if highest <= 2:
         results += "{}".format(lose_composure(die_type))
-    print("Rolled a d{} die with strength and got {} and {}.".format(die_type, x, y))
+    # Print to the console.
+    print("<@{}> rolled a d{} die using their strength and got {} and {}.".format(author.id, die_type, x, y))
     return results
 
 # Rolls two dice and returns the LOWEST.
@@ -131,8 +156,9 @@ def roll_weakness(die_type):
         lowest = x
         results += " ({}, {}). Take **{}**.".format(x, y, x)
     if lowest <= 2:
-        results += "{}".format(lose_composure(die_type))
-    print("Rolled a d{} die with weakness and got {} and {}.".format(die_type, x, y))
+        results += author.id + "{}".format(lose_composure(die_type))
+    # Print to the console.
+    print("<@{}> rolled a d{} die with weakness and got {} and {}.".format(author.id, die_type, x, y))
     return results
 
 # Append a message that the author has lost composure
@@ -144,7 +170,8 @@ def lose_composure(die_type):
         response += "\n*You lose the last of your composure and become **distressed!***"
     else:
         response += "\n*You lose some composure. Downgrade your composure die.*"
-    print("Losing some composure.")
+    # Print to the console.
+    print("<@{}> loses some composure.".format(author.id))
     return response
 
 # Parse .r verbage
@@ -177,7 +204,6 @@ def r(ctx, r : str):
                 die_type_int = int(die_type)
             if (die_type_int <= 0):
                 die_type_int *= -1
-        #
         # Get Fiadh to respond in the channel
         if strength != 0:
             yield from ctx.send("<@{}> :game_die:\n:heartpulse: **Strength roll:** d{}{}".format(author.id, die_type_int, roll_strength(die_type_int)))
@@ -199,6 +225,51 @@ def r(ctx, r : str):
 def help(ctx):
     print("Asking for help.")
     yield from ctx.send("```Fiadh commands:\n.r dX    for a simple roll\n.r dXc   for a composure roll\n.r dXe   for an enchantment roll\n.r dXs   for a strength roll\n.r dXw   for a weakness roll\n\nRoll types:\n[c] Composure\n    - Roll one die\n    - Downgrade on 1-2\n[e] Enchantment\n    - Roll one die\n    - Upgrade on highest two numbers\n[s] Strength\n    - Roll two dice\n    - Take the higher number\n[w] Weakness\n    - Roll two dice\n    - Take the lower number```")
+
+# Testing if I can post an embed.
+@bot.event
+async def on_message(message):
+    if message.content.startswith('!hello'):
+        embedVar = discord.Embed(title="Title",description="Desc", color=0x00ff00)
+        embedVar.add_field(name="Field1", value="hi", inline=False)
+        embedVar.add_field(name="Field2"
+                           +"\nHello", value="hi2", inline=False)
+        await message.channel.send(embed=embedVar)
+
+@bot.event
+async def on_message(message):
+    response = ""
+    if(message.content.startswith('.help')):
+        embedVar = discord.Embed(title = "Fiadh Help",
+                                 description = "",
+                                 color = 0x00ff00)
+        embedVar.add_field(name = "Overcoming an Obstacle",
+                           value = "When you try and overcome an obstacle using your body, mind, or spirit, you are *using an ability*. __Roll your composure die.__"
+                                + "\n"
+                                + "\n- Fiadh will roll two dice and take the higher number when you use your strength."
+                                + "\n- Fiadh will roll two dice and take the lower number when you use your weakness."
+                                + "\n"
+                                + "\nWhen you to try and overcome an obstacle by creating a wondrous, magical effect, you are *weaving a spell*. __Roll your enchantment die.__",
+                           inline = False)
+        embedVar.add_field(name = "Rolling Dice",
+                           value = "Replace `X` with the size of the die you wish to roll (4, 6, 8, 10, or 12):"
+                                + "\n`.roll dX `, `.r dX `, or `.rX ` Roll a single, plain die."
+                                + "\n`.roll dXc`, `.r dXc`, or `.rXc` Roll a composure die."
+                                + "\n`.roll dXs`, `.r dXs`, or `.rXs` Roll composure dice using your strength."
+                                + "\n`.roll dXw`, `.r dXw`, or `.rXw` Roll composure dice using your weakness."
+                                + "\n`.roll dXe`, `.r dXe`, or `.rXe` Roll an enchantment die.",
+                           inline = False)
+        embedVar.add_field(name = "How do you pronounce Fiadh?",
+                           value = "Fiadh is pronounced \"Fee-ya\"!",
+                           inline = False)
+        embedVar.add_field(name = "Scuba Sara",
+                           value = "Type `.scubasara` to dive into an ocean of wonders in this flavourful microgame!",
+                           inline = False)
+        embedVar.set_footer(text = "Fiadh v0.7 and Scuba Sara v0.4 by Raspilicious")
+        await message.channel.send(embed=embedVar)
+    # Print to the console.
+    print("<@{}> asked for help.".format(author.id))
+    return response
 
 @bot.command()
 @asyncio.coroutine
