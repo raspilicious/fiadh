@@ -2,10 +2,15 @@
 # A dice-rolling Discord bot to be used with the lighthearted, cooperative tabletop roleplaying game The Forests of Faera.
 #
 # Change Log
+# v1.1 20220119
+# - Added random story creation functionality
 # v1.0 20210817
 # - Initial python version
 # - Re-wrote commands to be SLASH COMMANDS! No more trying to remember the command syntax. Now, you can simply type / and choose a command. :)
 # - Re-wrote message responses to use EMBEDS. Now, they look so clean and fancy. <3
+
+# Story Maker Imports
+import random
 
 # Dice Imports
 from random import randint
@@ -18,9 +23,191 @@ import discord # Imported from https://github.com/Rapptz/discord.py
 from discord.ext import commands
 from discord_slash import SlashCommand
 
+# Variables
+
+files = [
+    'momentChallengeTypes.txt',
+    'momentCreaturesMultiple.txt',
+    'momentCreaturesSingular.txt',
+    'momentEnvironmentalEffects.txt',
+    'momentEnvironmentalFeatures.txt',
+    'momentThemes.txt',
+    'storyDestinations.txt',
+    'storyGivers.txt',
+    'storyKeyObjects.txt',
+    'storyReasons.txt',
+    'storyTypes.txt',
+    'travellerCallings.txt',
+    'travellerFaekind.txt' ]
+
+momentChallengeTypes = ""
+momentCreaturesMultiple = ""
+momentCreaturesSingular = ""
+momentEnvironmentalEffects = ""
+momentEnvironmentalFeatures = ""
+momentThemes = ""
+storyDestinations = ""
+storyGivers = ""
+storyKeyObjects = ""
+storyReasons = ""
+storyTypes = ""
+travellerCallings = ""
+travellerFaekind = ""
+
+numberWords = [ "no creatures", "a solitary", "a pair of", "a few", "a group of", "a large group of" ]
+
+storyDrive = ""
+storyMoments = ["", "", ""]
+
+def readFiles():
+    global momentChallengeTypes, momentCreaturesMultiple, momentCreaturesSingular, momentEnvironmentalEffects, momentEnvironmentalFeatures, momentThemes
+    global storyGivers, storyDestinations, storyDrive, storyKeyObjects, storyMoments, storyReasons, storyTypes
+    global travellerCallings, travellerFaekind
+    with open(files[0]) as file:
+        momentChallengeTypes = file.readlines()
+        momentChallengeTypes = [line.rstrip() for line in momentChallengeTypes]
+    with open(files[1]) as file:
+        momentCreaturesMultiple = file.readlines()
+        momentCreaturesMultiple = [line.rstrip() for line in momentCreaturesMultiple]
+    with open(files[2]) as file:
+        momentCreaturesSingular = file.readlines()
+        momentCreaturesSingular = [line.rstrip() for line in momentCreaturesSingular]
+    with open(files[3]) as file:
+        momentEnvironmentalEffects = file.readlines()
+        momentEnvironmentalEffects = [line.rstrip() for line in momentEnvironmentalEffects]
+    with open(files[4]) as file:
+        momentEnvironmentalFeatures = file.readlines()
+        momentEnvironmentalFeatures = [line.rstrip() for line in momentEnvironmentalFeatures]
+    with open(files[5]) as file:
+        momentThemes = file.readlines()
+        momentThemes = [line.rstrip() for line in momentThemes]
+    with open(files[6]) as file:
+        storyDestinations = file.readlines()
+        storyDestinations = [line.rstrip() for line in storyDestinations]
+    with open(files[7]) as file:
+        storyGivers = file.readlines()
+        storyGivers = [line.rstrip() for line in storyGivers]
+    with open(files[8]) as file:
+        storyKeyObjects = file.readlines()
+        storyKeyObjects = [line.rstrip() for line in storyKeyObjects]
+    with open(files[9]) as file:
+        storyReasons = file.readlines()
+        storyReasons = [line.rstrip() for line in storyReasons]
+    with open(files[10]) as file:
+        storyTypes = file.readlines()
+        storyTypes = [line.rstrip() for line in storyTypes]
+    with open(files[11]) as file:
+        travellerCallings = file.readlines()
+        travellerCallings = [line.rstrip() for line in travellerCallings]
+    with open(files[12]) as file:
+        travellerFaekind = file.readlines()
+        travellerFaekind = [line.rstrip() for line in travellerFaekind]
+
+async def createRandomStory():
+    global storyDrive, storyMoments
+    global storyGivers, storyReasons, storyTypes, storyKeyObjects, storyDestinations
+    global momentThemes, momentEnvironmentalEffects, momentEnvironmentalFeatures, momentChallengeTypes, momentCreaturesMultiple, momentCreaturesSingular
+    global travellerCallings, travellerFaekind
+
+    storyDrive = ""
+    storyMoments[0] = ""
+    storyMoments[1] = ""
+    storyMoments[2] = ""
+
+    if len(storyGivers) > 0:
+        for i in range(4):
+            if i == 0:
+                # STORY DRIVE
+                #storyDrive =  "Story Drive:"
+                storyDrive += "The travellers learn from " + str.lower(random.choice(storyGivers))
+                storyDrive += " that " + str.lower(random.choice(storyReasons)) + "—"
+                storyDrive += "they must " + str.lower(random.choice(storyTypes))
+                storyDrive += " " +  str.lower(random.choice(storyKeyObjects))
+                storyDrive += " from " + str.lower(random.choice(storyDestinations)) + "."
+            elif i == 1:
+                # STORY MOMENT 1
+                #storyMoments[0] = "Story Moment 1:"
+                # THEME
+                storyMoments[0] += "The travellers reach a " + str.lower(random.choice(momentThemes))
+                # ENVIRONMENTAL FEATURE
+                storyMoments[0] += " " + str.lower(random.choice(momentEnvironmentalFeatures)) + ","
+                # CREATURE/S
+                storyMoments[0] += " and encounter "
+                #randCount = random.randint(0, len(numberWords) - 1)
+                randCount = random.randint(0, 100)
+                if randCount < 10:
+                    storyMoments[0] += numberWords[0] + "."
+                elif randCount < 30:
+                    storyMoments[0] += numberWords[1] + " " + str.lower(random.choice(momentCreaturesSingular)) + "."
+                elif randCount < 50:
+                    storyMoments[0] += numberWords[2] + " " + str.lower(random.choice(momentCreaturesMultiple)) + "."
+                elif randCount < 70:
+                    storyMoments[0] += numberWords[3] + " " + str.lower(random.choice(momentCreaturesMultiple)) + "."
+                elif randCount < 90:
+                    storyMoments[0] += numberWords[4] + " " + str.lower(random.choice(momentCreaturesMultiple)) + "."
+                else:
+                    storyMoments[0] += numberWords[5] + " " + str.lower(random.choice(momentCreaturesMultiple)) + "."
+                # WEATHER
+                storyMoments[0] += " " + random.choice(momentEnvironmentalEffects) + ","
+                # TYPE OF CHALLENGE
+                randChallenge = random.randint(0, len(momentChallengeTypes) - 1)
+                if randChallenge < 4:
+                    storyMoments[0] += " and the travellers are challenged by something that tests their " + str.lower(momentChallengeTypes[randChallenge]) + "."
+                else:
+                    storyMoments[0] += " and the travellers are challenged by something that tests their ability to " + str.lower(momentChallengeTypes[randChallenge]) + "."
+            elif i == 2:
+                # STORY MOMENT 2
+                #storyMoments[1] = "Story Moment 2:"
+                # THEME
+                storyMoments[1] += "The travellers reach a " + str.lower(random.choice(momentThemes))
+                # ENVIRONMENTAL FEATURE
+                storyMoments[1] += " " + str.lower(random.choice(momentEnvironmentalFeatures)) + ","
+                # CREATURE/S
+                storyMoments[1] += " and encounter "
+                randCount = random.randint(0, len(numberWords) - 1)
+                if randCount == 0:
+                    storyMoments[1] += numberWords[randCount] + "."
+                elif randCount == 1:
+                    storyMoments[1] += numberWords[randCount] + " " + str.lower(random.choice(momentCreaturesSingular)) + "."
+                else:
+                    storyMoments[1] += numberWords[randCount] + " " + str.lower(random.choice(momentCreaturesMultiple)) + "."
+                # WEATHER
+                storyMoments[1] += " " + random.choice(momentEnvironmentalEffects) + ","
+                # TYPE OF CHALLENGE
+                randChallenge = random.randint(0, len(momentChallengeTypes) - 1)
+                if randChallenge < 4:
+                    storyMoments[1] += " and the travellers are challenged by something that tests their " + str.lower(momentChallengeTypes[randChallenge]) + "."
+                else:
+                    storyMoments[1] += " and the travellers are challenged by something that tests their ability to " + str.lower(momentChallengeTypes[randChallenge]) + "."
+            elif i == 3:
+                # STORY MOMENT 3
+                #storyMoments[2] = "Story Moment 3:"
+                # THEME
+                storyMoments[2] += "The travellers reach a " + str.lower(random.choice(momentThemes))
+                # ENVIRONMENTAL FEATURE
+                storyMoments[2] += " " + str.lower(random.choice(momentEnvironmentalFeatures)) + ","
+                # CREATURE/S
+                storyMoments[2] += " and encounter "
+                randCount = random.randint(0, len(numberWords) - 1)
+                if randCount == 0:
+                    storyMoments[2] += numberWords[randCount] + "."
+                elif randCount == 1:
+                    storyMoments[2] += numberWords[randCount] + " " + str.lower(random.choice(momentCreaturesSingular)) + "."
+                else:
+                    storyMoments[2] += numberWords[randCount] + " " + str.lower(random.choice(momentCreaturesMultiple)) + "."
+                # WEATHER
+                storyMoments[2] += " " + random.choice(momentEnvironmentalEffects) + ","
+                # TYPE OF CHALLENGE
+                randChallenge = random.randint(0, len(momentChallengeTypes) - 1)
+                if randChallenge < 4:
+                    storyMoments[2] += " and the travellers are challenged by something that tests their " + str.lower(momentChallengeTypes[randChallenge]) + "."
+                else:
+                    storyMoments[2] += " and the travellers are challenged by something that tests their ability to " + str.lower(momentChallengeTypes[randChallenge]) + "."
+
 # Authentication Token
 f = open('token.txt', 'r')
 token = f.read()
+readFiles()
 
 # Bot
 client = commands.Bot(command_prefix='/')
@@ -44,6 +231,21 @@ async def help(ctx):
     embed.set_footer(text='Fiadh v1.0 by Raspilicious. Look after each other when travelling through the forests!')
     await ctx.author.send(embed=embed)
     await ctx.send(content='{} asked for help, and I sent a help message to them.'.format(ctx.author.mention))
+
+# Story Maker
+@slash.slash(name='story', description='Create a story.')
+async def story(ctx):
+    await createRandomStory()
+    embed=discord.Embed(
+        title=':evergreen_tree: The Forests of Faera Story Maker :evergreen_tree:',
+        description='',
+        color=0x00BA87)
+    embed.add_field(name=':sparkles: Story Drive', value=storyDrive, inline=False)
+    embed.add_field(name=':one: Story Moment 1', value='' + storyMoments[0], inline=False)
+    embed.add_field(name=':two: Story Moment 2', value='' + storyMoments[1], inline=False)
+    embed.add_field(name=':three: Story Moment 3', value='' + storyMoments[2], inline=False)
+    embed.set_footer(text='Fiadh v1.0 by Raspilicious. Look after each other when travelling through the forests!')
+    await ctx.send(content='{} generated a random story!'.format(ctx.author.mention), embed=embed)
 
 # Roll a single die
 @slash.slash(name='roll', description='Roll a single die.')

@@ -1,2 +1,15 @@
 token.txt
+momentChallengeTypes.txt
+momentCreaturesMultiple.txt
+momentCreaturesSingular.txt
+momentEnvironmentalEffects.txt
+momentEnvironmentalFeatures.txt
+momentThemes.txt
+storyDestinations.txt
+storyGivers.txt
+storyKeyObjects.txt
+storyReasons.txt
+storyTypes.txt
+travellerCallings.txt
+travellerFaekind.txt
 fiadh-old.py
